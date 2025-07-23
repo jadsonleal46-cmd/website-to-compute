@@ -1,143 +1,135 @@
-# Your New Website 🤩
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Educativo - 3º e 4º Ano</title>
+  <style>
+    body { font-family: 'Comic Sans MS', cursive; text-align: center; background: #f0f8ff; margin: 0; padding: 0; }
+    h1 { background: #007bff; color: white; padding: 20px; margin: 0; }
+    .screen { display: none; padding: 20px; }
+    .active { display: block; }
+    .avatar { cursor: pointer; width: 100px; margin: 10px; border: 4px solid transparent; border-radius: 50%; }
+    .avatar.selected { border-color: gold; }
+    .question { font-size: 20px; margin: 20px 0; }
+    .answers button { padding: 10px 20px; margin: 10px; font-size: 18px; }
+    .team { margin: 10px; display: inline-block; padding: 10px; border-radius: 12px; background: #eee; cursor: pointer; }
+    .team.selected { background: #ffc107; }
+    .podium { font-size: 24px; }
+  </style>
+</head>
+<body>
+  <h1>Quiz Educativo 🧠🎉</h1>
 
-Oh hi! Welcome to your new website. 🛼
+  <div class="screen active" id="screen-start">
+    <h2>Digite seu nome:</h2>
+    <input type="text" id="player-name" placeholder="Seu nome">
+    <h2>Escolha sua equipe:</h2>
+    <div id="teams">
+      <div class="team" data-team="Equipe Azul">Equipe Azul 💙</div>
+      <div class="team" data-team="Equipe Vermelha">Equipe Vermelha ❤️</div>
+      <div class="team" data-team="Equipe Verde">Equipe Verde 💚</div>
+      <div class="team" data-team="Equipe Amarela">Equipe Amarela 💛</div>
+      <div class="team" data-team="Equipe Roxa">Equipe Roxa 💜</div>
+    </div>
+    <h2>Escolha seu avatar:</h2>
+    <div>
+      <img src="https://i.imgur.com/1X1x1x1.png" class="avatar" data-avatar="avatar1">
+      <img src="https://i.imgur.com/2X2x2x2.png" class="avatar" data-avatar="avatar2">
+      <img src="https://i.imgur.com/3X3x3x3.png" class="avatar" data-avatar="avatar3">
+    </div>
+    <br>
+    <button onclick="startQuiz()">Começar o Quiz</button>
+  </div>
 
-With this project you can make a website and preview it in your browser, then deploy it for free – you don't even need a host!
+  <div class="screen" id="screen-quiz">
+    <div id="quiz-box">
+      <div id="question-number"></div>
+      <div class="question" id="question-text"></div>
+      <div class="answers" id="answers"></div>
+    </div>
+  </div>
 
-**In this guide we'll learn how to deploy your project to <a href="https://www.fastly.com/products/edge-compute" target="_blank">Fastly Compute</a> – your deployment will automatically handle things like 404 errors, and your beautiful website will immediately be available for everyone, everywhere all at once. 🪄**
+  <div class="screen" id="screen-end">
+    <h2>Fim do Quiz!</h2>
+    <div id="podium" class="podium"></div>
+    <button onclick="restartQuiz()">Jogar Novamente</button>
+  </div>
 
-> You can alternatively deploy your blog to other platforms, like <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
+  <script>
+    const questions = [
+      { q: "Quanto é 3 + 4?", a: ["6", "7", "8"], correct: 1 },
+      { q: "Qual é o antônimo de 'alto'?", a: ["grande", "baixo", "forte"], correct: 1 },
+      { q: "Quanto é 9 - 5?", a: ["3", "4", "5"], correct: 1 },
+      { q: "Qual é o plural de 'pão'?", a: ["pães", "pãos", "pãez"], correct: 0 }
+    ];
 
-## In this doc
+    let current = 0, score = 0, playerName = '', playerTeam = '', teamsScore = {};
 
-* [Fork your own site](#fork-your-own-site)
-* [Get to know your website](#get-to-know-your-website)
-  * [Share your draft site](#share-your-draft-site)
-* [Deploy your site to Fastly Compute](#deploy-your-site-to-fastly-compute)
-* [Save your edits to GitHub](#save-your-edits-to-github)
-* [How this project works](#how-this-project-works-)
-  * [Extensions](#extensions)
-* [Keep going! 🚀](#keep-going-)
+    const teamElements = document.querySelectorAll('.team');
+    teamElements.forEach(el => el.addEventListener('click', () => {
+      teamElements.forEach(t => t.classList.remove('selected'));
+      el.classList.add('selected');
+      playerTeam = el.dataset.team;
+    }));
 
-## Fork your own site
+    const avatarElements = document.querySelectorAll('.avatar');
+    avatarElements.forEach(el => el.addEventListener('click', () => {
+      avatarElements.forEach(a => a.classList.remove('selected'));
+      el.classList.add('selected');
+    }));
 
-**Fork** [this repository](https://github.com/glitchdotcom/website-to-compute/) to create your own copy of the site.
+    function startQuiz() {
+      playerName = document.getElementById('player-name').value;
+      if (!playerName || !playerTeam) return alert("Preencha seu nome e equipe!");
+      document.getElementById('screen-start').classList.remove('active');
+      document.getElementById('screen-quiz').classList.add('active');
+      score = 0;
+      current = 0;
+      showQuestion();
+    }
 
-In your fork, open the site in a codespace by clicking **Code** > **Codespaces** and creating a new codespace on your main branch. 
+    function showQuestion() {
+      const q = questions[current];
+      document.getElementById('question-number').textContent = `Pergunta ${current + 1} de ${questions.length}`;
+      document.getElementById('question-text').textContent = q.q;
+      const answersDiv = document.getElementById('answers');
+      answersDiv.innerHTML = '';
+      q.a.forEach((alt, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = alt;
+        btn.onclick = () => checkAnswer(i);
+        answersDiv.appendChild(btn);
+      });
+    }
 
-<img alt="Create codespace" src="https://github.com/user-attachments/assets/cb29a8da-d1ac-42f5-962c-7d43b8011324" width="400px"/><br/>
+    function checkAnswer(index) {
+      if (index === questions[current].correct) score++;
+      current++;
+      if (current < questions.length) {
+        showQuestion();
+      } else {
+        endQuiz();
+      }
+    }
 
-Give the codespace a minute or two to start up – it'll automatically build and preview your new website! 
+    function endQuiz() {
+      document.getElementById('screen-quiz').classList.remove('active');
+      document.getElementById('screen-end').classList.add('active');
+      teamsScore[playerTeam] = (teamsScore[playerTeam] || 0) + score;
+      const sorted = Object.entries(teamsScore).sort((a,b) => b[1] - a[1]);
+      let podiumHTML = '<h3>🏆 Pódio por Equipes:</h3>';
+      sorted.forEach(([team, pts], i) => {
+        podiumHTML += `<div>${i+1}º - ${team}: ${pts} pontos</div>`;
+      });
+      document.getElementById('podium').innerHTML = podiumHTML;
+    }
 
-![this project in a codespace](https://github.com/user-attachments/assets/308941a8-ddbe-48f6-a8f0-c23cc615ed01)
+    function restartQuiz() {
+      document.getElementById('screen-end').classList.remove('active');
+      document.getElementById('screen-start').classList.add('active');
+    }
+  </script>
+</body>
+</html>
 
-* When your website preview opens, click the **🔎 Split** button at the bottom so that you can see the site side by side with your code.
-* _You can close [x] the **Terminal** while you work._
-
-Make sure you [save your changes to GitHub](#save-your-edits-to-github).
-
-## Get to know your website
-
-You can make edits in the files by opening them from the left sidebar. Your website preview will update as you edit!
-
-💡 Try opening `index.html` and making a change.
-
-🎨 Change your site style rules in `style.css`.
-
-🖼️ Add images in the `public` folder – you'll find an example of including an image in the HTML.
-
-> 🚨⚠️ Danger zone: There are directories in the project that might break your site... 😱😈
->
-> * The `.devcontainer` folder includes the configuration that creates the experience in your codespace.
-> * The `helpers` folder contains some bash scripts that run when your project starts and when you hit the **🚀 Publish** button.
-
-### Share your draft site 
-
-You can share links to your draft site with collaborators – click **🔗 Share** at the bottom of the editor. The terminal output will include a link you can right-click and copy to share with anyone you like! 
-
-> This project includes a handy shortcut button for grabbing your preview URL but it might be a wee bit error prone 😅 you can also access these details in **💻 Terminal** > **PORTS** or by clicking the little Forwarded Ports icon: <img src="https://github.com/user-attachments/assets/6bfc0238-a0a8-434f-9188-ff1d45df0ca0" style="height:1em" alt="ports icon"/>
->
-> Change `private` to `public` by right-clicking your running port and choosing from the options.
->
-> Copy the URL to your clipboard and share it 📋.
-
-## Deploy your site to Fastly Compute
-
-Ready to unveil your site to the world? Deploy it to Fastly!
-
-Grab a Fastly API key from your account and add it to your GitHub repo:
-
-- Sign up for a <strong><a href="https://www.fastly.com/signup/" target="_blank">free Fastly developer account</a></strong>
-- Grab an **API Token** from **Account** > **API Tokens** > **Personal Tokens** > **Create Token**
-  - _Type_: Automation
-  - _Role_: Engineer
-  - _Scope_: Global (deselect the _Read-only access_ box)
-  - _Access_: All services
-  - _Expiration_: Never expire
-- **Copy the token value into GitHub**
-  - Back in your codespace, click into the textfield at the top of the editor and type `>` to access the command palette
-  - Type `secret` and select **Codespaces: Manage user secrets**
-    - <img alt="Secret command" src="https://github.com/user-attachments/assets/a6cfeac8-2aca-40a4-ab41-d207733b61cc" width="300px"/>
-  - Click **+ Add a new secret**
-    - <img alt="Add new secret" src="https://github.com/user-attachments/assets/350e545c-0073-4327-ac99-3663049e7aad" width="400px"/>
-  - Enter the name `FASTLY_API_TOKEN`
-    - <img alt="Fastly token" src="https://github.com/user-attachments/assets/536d1b2a-bf62-4085-aac4-ade7d2898583" width="400px"/>
-  - Paste your token value and enter
-
-In the notifications area at the bottom right of your codespace, you should see a prompt to **reload** for the new environment variable, so go ahead and click that (otherwise click the little bell 🔔 icon to check for the message).
-
-Hit the **🚀 Publish** button at the bottom of the editor, enter `y` and watch the **Terminal** output for your new site address! It might take a couple of minutes... 🥁
-
-![New Compute app address in the Terminal](https://github.com/user-attachments/assets/0a5a8f84-4907-4d60-83da-d3b90e745562)
-
-You'll see your new `*.edgecompute.app` address in the output. Open it in a new tab and tell everyone you know about your new site. 📣
-
-🎢 Whenever you update your content, hit the **🚀 Publish** button again to go live!
-
-## Save your edits to GitHub
-
-GitHub will keep the edits you make in the codespace only for a limited time, so it's a good idea to commit your work to a repo regularly. Use the **Source Control** button on the left of the editor – you can make commits, open and merge pull requests right inside the codespace. 
-
-<img alt="source control" src="https://github.com/user-attachments/assets/a5160b08-4f80-4a5f-af76-bde18a43427d" width="300px"/>
-
-> GitHub will notify you if any of your codespaces are about to expire. If you have changes you want to keep, you can use the **Export changes to a branch** option.
-> 
-> <img alt="export to branch" width="500px" src="https://github.com/user-attachments/assets/c7815347-3e5a-4e34-97f2-db58343acaa4"/>
-
-## How this project works 🧐
-
-This project uses the <a href="https://github.com/fastly/compute-js-static-publish" target="_blank">Fastly JavaScript Static Publisher</a> to turn your blog into a serverless app that runs at the network edge, near your users. 
-
-* The project uses [Vite](https://vite.dev/) to build your site for deployment, placing files in the `deploy/_site` folder.
-* The Static Publisher uses those files to scaffold a Compute app that compiles into Webassembly (Wasm) to run fast and securely on the Fastly network – you'll find the Compute code in `deploy/_app` after you deploy.
-* When you publish, the project deploys the app to Fastly, creating a service and uploading the Wasm to it.
-* It then then publishes your content to a KV Store – a key-value store that also runs on Fastly and that your app can talk to.
-
-_The app itself only needs deployed to Fastly once, when you click the **🚀 Publish** button after that, we just update the content in your KV Store and your Compute app will pull your assets from there._
-
-📝 Your Fastly service and KV Store will include your GitHub username and repo in their names, so you'll only be able to deploy one Compute app per repo unless you tweak the scripts.
-
-⚙️ The settings we use to create the guided experience in the codespace are in the `.devcontainer/` folder.
-
-🧰 You'll find the Fastly CLI commands we use under the hood in the `helpers/publish.sh` script.
-
-💻 If you check the right-hand side of the **Terminal** you'll find multiple processes – this is to run the vite and Fastly commands.
-
-### Extensions
-
-This project uses the following extensions from the dev community! 🙌
-
-* [VSCode Action Buttons Ext](https://marketplace.visualstudio.com/items?itemName=jkearins.action-buttons-ext)
-* [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-
-## Keep going! 🛸
-
-**Don't stop there, <a href="https://www.fastly.com/documentation/solutions/tutorials/deliver-your-site/#sending-domain-traffic-to-fastly" target="_blank">add a domain to your new site</a>.**
-
-You'll find your service in your Fastly account control panel – check out the **Observability** stats! 📊
-
-Check out more tips on using the <a href="https://github.com/fastly/compute-js-static-publish" target="_blank">Static Publisher</a> in its `README`. Note that if you change the Compute code, you'll need to run a separate deploy command to push your changes to Fastly as the **🚀 Publish** button only deploys once, after that it just updates your KV content.
-
-🛟 Get help on the <a href="https://community.fastly.com" target="_blank">community forum</a>.
-
-<img src="https://github.com/user-attachments/assets/17a8af4a-100f-416d-a1cf-f84174262138" width="100px"/>
